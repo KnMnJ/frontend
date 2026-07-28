@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="12주 프론트엔드 학습 로드맵 — HTML부터 React, TypeScript, Next.js, 배포까지 단계별로 공부하는 대화형 학습 플래너">
+  <meta name="theme-color" content="#06070f">
+  <title>12주 프론트엔드 로드맵</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- 배경 파티클 -->
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow glow-purple" aria-hidden="true"></div>
+  <div class="bg-glow glow-blue" aria-hidden="true"></div>
+  <div class="bg-glow glow-green" aria-hidden="true"></div>
+
+  <!-- 헤더 -->
+  <header class="site-header" role="banner">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 18 22 12 16 6"/>
+            <polyline points="8 6 2 12 8 18"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <strong>Frontend Roadmap</strong>
+          <span>12주 완성 플랜</span>
+        </div>
+      </div>
+
+      <!-- 진행률 (상단 중앙) -->
+      <div class="header-progress" id="headerProgress" aria-label="전체 학습 진행률">
+        <div class="progress-ring-wrap" aria-hidden="true">
+          <svg class="progress-ring" viewBox="0 0 44 44">
+            <circle class="ring-track" cx="22" cy="22" r="18"/>
+            <circle class="ring-fill" id="progressRing" cx="22" cy="22" r="18"/>
+          </svg>
+          <span class="ring-percent" id="progressPercent">0%</span>
+        </div>
+        <div class="progress-info">
+          <span class="progress-label">전체 진행률</span>
+          <span class="progress-count" id="progressCount">0 / 84일 완료</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progressBarFill" style="width:0%"></div>
+          </div>
+          <div class="progress-weeks" id="progressWeeks">
+            <!-- 12개 주차 도트 -->
+          </div>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <span class="header-badge">GitHub Pages 배포용</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 메인 콘텐츠 -->
+  <main class="main-content" role="main">
+    <div class="page-container">
+
+      <!-- 히어로 섹션 -->
+      <section class="hero-section" aria-labelledby="heroTitle">
+        <div class="hero-text">
+          <p class="hero-eyebrow">FRONTEND DEVELOPER ROADMAP</p>
+          <h1 id="heroTitle" class="hero-title">
+            84일의 <span class="gradient-text">여정</span>으로<br>
+            프론트엔드를 <span class="gradient-text">완성</span>하다
+          </h1>
+          <p class="hero-desc">
+            HTML 기초부터 React, TypeScript, Next.js까지. 매일 결과물을 남기며
+            실전 개발자로 성장하는 12주 커리큘럼입니다.
+          </p>
+        </div>
+        <div class="hero-stats" aria-label="커리큘럼 통계">
+          <div class="stat-card">
+            <span class="stat-num">12</span>
+            <span class="stat-label">주차</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-num">84</span>
+            <span class="stat-label">학습일</span>
+          </div>
+          <div class="stat-card" id="completedStatCard">
+            <span class="stat-num" id="completedStatNum">0</span>
+            <span class="stat-label">완료일</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 주차 목록 (아코디언) -->
+      <section class="curriculum-section" aria-label="주차별 커리큘럼">
+        <div class="curriculum-header">
+          <h2 class="section-title">커리큘럼</h2>
+          <div class="curriculum-controls">
+            <button class="ctrl-btn" id="expandAllBtn" type="button">전체 열기</button>
+            <button class="ctrl-btn" id="collapseAllBtn" type="button">전체 닫기</button>
+          </div>
+        </div>
+
+        <div class="weeks-list" id="weeksList" role="list">
+          <!-- JS로 렌더링 -->
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- 파일 뷰어 (새 탭) - 이 파일은 별도 viewer.html 사용 -->
+
+  <!-- 토스트 알림 -->
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
