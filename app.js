@@ -3354,5 +3354,15 @@ promptCopyStyle.textContent = `
     display: block;
   }
 `;
+
 document.head.appendChild(promptCopyStyle);
 
+const scrollTopBtn = document.getElementById('scrollTopBtn');
+
+scrollTopBtn?.addEventListener('click', () => {
+  window.scrollTo({
+    top: 0,
+    left: 0,
+    behavior: 'instant'
+  });
+});
