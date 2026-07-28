@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,9 +10,12 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
 
   <!-- 배경 파티클 -->
@@ -25,9 +29,10 @@
     <div class="header-inner">
       <div class="brand">
         <div class="brand-icon" aria-hidden="true">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="16 18 22 12 16 6"/>
-            <polyline points="8 6 2 12 8 18"/>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 18 22 12 16 6" />
+            <polyline points="8 6 2 12 8 18" />
           </svg>
         </div>
         <div class="brand-text">
@@ -40,8 +45,8 @@
       <div class="header-progress" id="headerProgress" aria-label="전체 학습 진행률">
         <div class="progress-ring-wrap" aria-hidden="true">
           <svg class="progress-ring" viewBox="0 0 44 44">
-            <circle class="ring-track" cx="22" cy="22" r="18"/>
-            <circle class="ring-fill" id="progressRing" cx="22" cy="22" r="18"/>
+            <circle class="ring-track" cx="22" cy="22" r="18" />
+            <circle class="ring-fill" id="progressRing" cx="22" cy="22" r="18" />
           </svg>
           <span class="ring-percent" id="progressPercent">0%</span>
         </div>
@@ -121,6 +126,7 @@
   <!-- 토스트 알림 -->
   <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
+
 </html>

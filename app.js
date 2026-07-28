@@ -579,28 +579,134 @@ const CURRICULUM = [
   }
 ];
 
-// ── 스토리지 키 ──────────────────────────────────────────
+
+import {
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  doc,
+  setDoc,
+  deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBXedrUBjxgB6UK7xByD1a2iKzHwzGXpFk",
+  authDomain: "frontend-b72bf.firebaseapp.com",
+  projectId: "frontend-b72bf",
+  storageBucket: "frontend-b72bf.firebasestorage.app",
+  messagingSenderId: "1982598836",
+  appId: "1:1982598836:web:b806c202547260b89051e1",
+  measurementId: "G-YW04RFY66S"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+// ── 로컬 캐시 키 ─────────────────────────────────────────
+// Firebase가 일시적으로 실패했을 때만 화면을 유지하기 위한 보조 캐시입니다.
+// 실제 원본 데이터는 Firestore / Firebase Storage에 저장됩니다.
 const STORAGE_KEY = "frontend_roadmap_files_v2";
 const MEMO_STORAGE_KEY = "frontend_roadmap_memos_v2";
 
 // ── 상태 ─────────────────────────────────────────────────
-let allFiles = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-let allMemos = JSON.parse(localStorage.getItem(MEMO_STORAGE_KEY) || "{}");
+let allFiles = [];
+let allMemos = {};
 const openWeeks = new Set();
 const openDays = new Map(); // "w-d" → boolean
 const openTopics = new Map(); // "w-d-t" → boolean
+const memoSaveTimers = new Map();
 
 // ── 유틸리티 ─────────────────────────────────────────────
 const dayKey = (w, d) => `w${w}d${d}`;
 
+function saveLocalCache() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(allFiles));
+  localStorage.setItem(MEMO_STORAGE_KEY, JSON.stringify(allMemos));
+}
+
+// Firestore 데이터를 기다리지 않고 로컬 캐시로 먼저 화면을 렌더링합니다.
+async function loadCloudData() {
+  // 1. [초고속 렌더링] 로컬 캐시를 먼저 읽어와서 화면을 즉시 그립니다.
+  allFiles = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  allMemos = JSON.parse(localStorage.getItem(MEMO_STORAGE_KEY) || "{}");
+  render();
+  updateProgress();
+
+  // 2. [백그라운드 통신] 그 사이에 클라우드에서 최신 데이터를 가져옵니다.
+  try {
+    const [filesSnapshot, memosSnapshot] = await Promise.all([
+      getDocs(collection(db, "files")),
+      getDocs(collection(db, "memos"))
+    ]);
+
+    allFiles = filesSnapshot.docs.map(snapshot => ({
+      id: snapshot.id,
+      ...snapshot.data()
+    }));
+
+    allMemos = {};
+    memosSnapshot.forEach(snapshot => {
+      const data = snapshot.data();
+      if (typeof data.content === "string" && data.content.trim()) {
+        allMemos[snapshot.id] = data.content;
+      }
+    });
+
+    // 3. [최신화] 캐시를 최신 상태로 덮어쓰고, 화면도 최신 데이터로 업데이트합니다.
+    saveLocalCache();
+    render();
+    updateProgress();
+
+  } catch (error) {
+    console.error("클라우드 데이터 불러오기 실패:", error);
+    showToast("오프라인 상태입니다. 마지막 저장 상태로 동작합니다.");
+  }
+}
+
+// 입력할 때마다 Firestore 쓰기가 발생하지 않도록 700ms 디바운스를 적용합니다.
 function saveMemo(w, d, text) {
   const key = dayKey(w, d);
+
   if (!text.trim()) {
     delete allMemos[key];
   } else {
     allMemos[key] = text;
   }
-  localStorage.setItem(MEMO_STORAGE_KEY, JSON.stringify(allMemos));
+  saveLocalCache();
+
+  clearTimeout(memoSaveTimers.get(key));
+  const timer = setTimeout(async () => {
+    try {
+      if (!text.trim()) {
+        await deleteDoc(doc(db, "memos", key));
+      } else {
+        await setDoc(doc(db, "memos", key), {
+          content: text,
+          updatedAt: Date.now()
+        });
+      }
+    } catch (error) {
+      console.error("메모 저장 실패:", error);
+      showToast("메모를 클라우드에 저장하지 못했습니다.");
+    } finally {
+      memoSaveTimers.delete(key);
+    }
+  }, 700);
+
+  memoSaveTimers.set(key, timer);
 }
 
 function filesForDay(w, d) {
@@ -620,7 +726,7 @@ function weekProgress(w) {
 }
 
 function saveFiles() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(allFiles));
+  saveLocalCache();
 }
 
 function ext(fileName) {
@@ -720,67 +826,94 @@ function toggleTopic(w, d, t) {
 }
 
 // ── 파일 업로드 ──────────────────────────────────────────
-function handleFileUpload(w, d, fileList) {
+async function handleFileUpload(w, d, fileList) {
   const key = dayKey(w, d);
+
   for (const file of Array.from(fileList)) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      allFiles.push({
-        id: crypto.randomUUID(),
+    // 💡 HTTPS/localhost가 아니어도 동작하는 범용 ID 생성 로직
+    const id = (typeof crypto !== 'undefined' && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : Date.now().toString(36) + Math.random().toString(36).substring(2);
+
+    const storagePath = `uploads/${key}/${id}/${file.name}`;
+    const fileRef = ref(storage, storagePath);
+
+    try {
+      showToast(`"${file.name}" 업로드 중... ⏳`);
+
+      await uploadBytes(fileRef, file, {
+        contentType: file.type || "application/octet-stream"
+      });
+
+      const fileUrl = await getDownloadURL(fileRef);
+
+      const newFile = {
+        id,
         key,
         name: file.name,
         size: file.size,
         type: file.type,
-        content: e.target.result,   // base64 data URL
+        content: fileUrl,
+        storagePath,
         uploadedAt: Date.now()
-      });
+      };
+
+      await setDoc(doc(db, "files", id), newFile);
+
+      allFiles.push(newFile);
       saveFiles();
       refreshDayUI(w, d);
       updateProgress();
       updateWeekBadge(w);
-      showToast(`"${file.name}" 업로드 완료 ✓`);
-    };
-    reader.readAsDataURL(file);
+      showToast(`"${file.name}" 클라우드 업로드 완료 ✓`);
+    } catch (error) {
+      console.error("파일 업로드 에러:", error);
+
+      // Storage 업로드 뒤 Firestore 기록에서 실패한 경우 고아 파일을 정리합니다.
+      try {
+        await deleteObject(fileRef);
+      } catch (_) {
+        // 업로드 자체가 실패했으면 삭제할 객체가 없으므로 무시합니다.
+      }
+
+      showToast(`"${file.name}" 업로드 실패 ❌`);
+    }
   }
 }
 
-function deleteFile(id, w, d) {
-  allFiles = allFiles.filter(f => f.id !== id);
-  saveFiles();
-  refreshDayUI(w, d);
-  updateProgress();
-  updateWeekBadge(w);
-  showToast("파일이 삭제되었습니다.");
-}
-
-// 파일 클릭 → 새 탭에서 열기
-function openFile(id) {
-  const file = allFiles.find(f => f.id === id);
+async function deleteFile(id, w, d) {
+  const file = allFiles.find(item => item.id === id);
   if (!file) return;
 
-  if (file.name.endsWith(".html") || file.type === "text/html") {
-    // HTML: base64 디코딩 후 새 탭에 직접 쓰기 (UTF-8 한글 깨짐 방지)
-    const win = window.open("", "_blank");
-    if (!win) { showToast("팝업 차단을 해제하고 다시 시도하세요."); return; }
+  try {
+    // 새 파일은 storagePath를 사용하고, 기존 데이터는 예전 경로를 한 번 더 시도합니다.
+    const targetPath = file.storagePath || `uploads/${file.key}/${file.name}`;
 
-    const base64 = file.content.split(",")[1] || "";
-    const binaryString = atob(base64);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    const html = new TextDecoder("utf-8").decode(bytes);
+    await Promise.all([
+      deleteObject(ref(storage, targetPath)),
+      deleteDoc(doc(db, "files", id))
+    ]);
 
-    win.document.open();
-    win.document.write(html);
-    win.document.close();
-  } else {
-    // 그 외 파일: data URL로 새 탭 열기
-    const a = document.createElement("a");
-    a.href = file.content;
-    a.target = "_blank";
-    a.rel = "noopener";
-    a.click();
+    allFiles = allFiles.filter(item => item.id !== id);
+    saveFiles();
+    refreshDayUI(w, d);
+    updateProgress();
+    updateWeekBadge(w);
+    showToast("클라우드에서 파일을 삭제했습니다.");
+  } catch (error) {
+    console.error("파일 삭제 실패:", error);
+    showToast("파일 삭제에 실패했습니다.");
+  }
+}
+
+// 파일 클릭 → Firebase 다운로드 URL을 새 탭에서 엽니다.
+function openFile(id) {
+  const file = allFiles.find(item => item.id === id);
+  if (!file?.content) return;
+
+  const opened = window.open(file.content, "_blank", "noopener");
+  if (!opened) {
+    showToast("팝업 차단을 해제하고 다시 시도하세요.");
   }
 }
 
@@ -1113,5 +1246,5 @@ document.body.insertAdjacentHTML("afterbegin", `
 `);
 
 // ── 초기 실행 ────────────────────────────────────────────
-render();
-updateProgress();
+// Firebase 데이터를 읽은 뒤 렌더링해야 다른 브라우저에서도 같은 상태가 보입니다.
+loadCloudData();
