@@ -1874,7 +1874,7 @@ const MEMO_STORAGE_KEY = "frontend_roadmap_memos_v2";
 
 
 // ── 파일 업로드 제한 ─────────────────────────────────────────
-const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 100MB
 const DELETE_PASSWORD = "0315";
 
 // ── 상태 ─────────────────────────────────────────────────
@@ -2102,9 +2102,9 @@ async function handleFileUpload(w, d, fileList) {
   const key = dayKey(w, d);
 
   for (const file of Array.from(fileList)) {
-    // 파일 1개당 최대 100MB
+    // 파일 1개당 최대 10MB
     if (file.size > MAX_FILE_SIZE) {
-      showToast(`"${file.name}"은 100MB를 초과해 업로드할 수 없습니다.`);
+      showToast(`"${file.name}"은 10MB를 초과해 업로드할 수 없습니다.`);
       continue;
     }
 
