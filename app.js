@@ -2603,8 +2603,6 @@ function buildLearningPrompt(w, d) {
     `오늘은 ${w}주차 ${d}일차 「${dayData.title || "학습 주제"}」를 공부하려고 해.`,
     dayData.summary ? `학습 개요: ${dayData.summary}` : "",
     topics ? `\n오늘 배울 내용:\n${topics}` : "",
-    dayData.practice ? `\n오늘의 실습: ${dayData.practice}` : "",
-    dayData.deliverable ? `완성할 결과물: ${dayData.deliverable}` : "",
     "",
     "위 내용을 다음 방식으로 가르쳐줘.",
     "1. 각 개념을 초보자 눈높이에서 쉽게 설명해줘.",
