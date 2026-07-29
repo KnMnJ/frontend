@@ -1874,8 +1874,63 @@ const MEMO_STORAGE_KEY = "frontend_roadmap_memos_v2";
 
 
 // ── 파일 업로드 제한 ─────────────────────────────────────────
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 100MB
-const DELETE_PASSWORD = "0315";
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+
+// ── 접근 제어 검증 구조 ───────────────────────────────────────
+// salt는 16바이트를 4개 조각으로 나누어 저장합니다.
+const _S_PARTS = [
+  [183, 247, 62, 119],
+  [204, 31, 88, 173],
+  [57, 142, 215, 9],
+  [130, 76, 251, 44]
+];
+
+// Console에서 createPasswordVerifier()를 실행한 뒤 아래에 붙여 넣으세요.
+const _H_PARTS = [
+  "4912e45caa638a11",
+  "c20ccc5fe0b9d890",
+  "b51eabdb4b151a84",
+  "5d6987321daf6442"
+];
+
+const _KDF_R = 350_000;
+
+// PBKDF2-SHA256으로 입력값의 파생 해시를 계산합니다.
+async function _deriveKey(raw) {
+  const normalized = raw.normalize("NFKC");
+  const encoded = new TextEncoder().encode(normalized);
+
+  const baseKey = await crypto.subtle.importKey(
+    "raw", encoded, "PBKDF2", false, ["deriveBits"]
+  );
+
+  const saltBytes = new Uint8Array(_S_PARTS.flat());
+
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", hash: "SHA-256", salt: saltBytes, iterations: _KDF_R },
+    baseKey,
+    256
+  );
+
+  return Array.from(new Uint8Array(bits))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+// 저장된 조각을 역순으로 복원해 기대값 문자열을 반환합니다.
+function _getExpected() {
+  return [..._H_PARTS].reverse().join("");
+}
+
+// 타이밍 공격을 방지하는 일정 시간 문자열 비교 함수입니다.
+function _safeEqual(a, b) {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) {
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return diff === 0;
+}
 
 // ── 상태 ─────────────────────────────────────────────────
 let allFiles = [];
@@ -2006,10 +2061,10 @@ function ext(fileName) {
 }
 
 function formatSize(bytes) {
-  if (!bytes) return "0 B";
+  if (!bytes) return "0B";
   const units = ["B", "KB", "MB"];
   const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
-  return `${(bytes / 1024 ** i).toFixed(i ? 1 : 0)} ${units[i]}`;
+  return `${(bytes / 1024 ** i).toFixed(i ? 1 : 0)}${units[i]}`;
 }
 
 // ── 토스트 ────────────────────────────────────────────────
@@ -2102,9 +2157,9 @@ async function handleFileUpload(w, d, fileList) {
   const key = dayKey(w, d);
 
   for (const file of Array.from(fileList)) {
-    // 파일 1개당 최대 10MB
+    // 파일 1개당 최대 100MB
     if (file.size > MAX_FILE_SIZE) {
-      showToast(`"${file.name}"은 10MB를 초과해 업로드할 수 없습니다.`);
+      showToast(`"${file.name}"은 100MB를 초과해 업로드할 수 없습니다.`);
       continue;
     }
 
@@ -2272,7 +2327,7 @@ function showDeleteModal(file) {
       input.select();
     };
 
-    const submit = () => {
+    const submit = async () => {
       const password = input.value;
 
       if (!password) {
@@ -2280,12 +2335,34 @@ function showDeleteModal(file) {
         return;
       }
 
-      if (password !== DELETE_PASSWORD) {
-        showError("비밀번호가 올바르지 않습니다.");
-        return;
-      }
+      // 검증 중 중복 실행 방지
+      confirmButton.disabled = true;
+      input.disabled = true;
 
-      finish(true);
+      try {
+        const derived = await _deriveKey(password);
+        const expected = _getExpected();
+
+        if (!_safeEqual(derived, expected)) {
+          showError("비밀번호가 올바르지 않습니다.");
+          // 검증 실패 시 다시 입력할 수 있도록 복구
+          if (!finished) {
+            confirmButton.disabled = false;
+            input.disabled = false;
+          }
+          return;
+        }
+
+        input.value = "";
+        finish(true);
+      } catch (err) {
+        console.error("[접근 검증 오류]", err);
+        showError("비밀번호를 확인하지 못했습니다.");
+        if (!finished) {
+          confirmButton.disabled = false;
+          input.disabled = false;
+        }
+      }
     };
 
     const handleKeydown = event => {
@@ -2296,7 +2373,7 @@ function showDeleteModal(file) {
 
       if (event.key === "Enter") {
         event.preventDefault();
-        submit();
+        void submit();
       }
     };
 
@@ -2305,7 +2382,7 @@ function showDeleteModal(file) {
       input.removeAttribute("aria-invalid");
     });
 
-    confirmButton.addEventListener("click", submit);
+    confirmButton.addEventListener("click", () => void submit());
     cancelButton.addEventListener("click", () => finish(false));
     closeButton.addEventListener("click", () => finish(false));
 
@@ -2874,6 +2951,51 @@ document.getElementById("weeksList")?.addEventListener("input", e => {
   saveMemo(w, d, e.target.value);
 });
 
+// ── 이어하기 ─────────────────────────────────────────────
+document.getElementById("continueLearningBtn")?.addEventListener("click", () => {
+  let targetW = null, targetD = null;
+  
+  for (const week of CURRICULUM) {
+    const w = week.week;
+    for (const day of week.days) {
+      const d = day.day;
+      if (!isDayDone(w, d)) {
+        targetW = w;
+        targetD = d;
+        break;
+      }
+    }
+    if (targetW) break;
+  }
+  
+  if (targetW && targetD) {
+    if (!openWeeks.has(targetW)) {
+      openWeeks.add(targetW);
+      document.querySelector(`[data-week-item="${targetW}"]`)?.classList.add("open");
+    }
+    
+    const dayKeyStr = `${targetW}-${targetD}`;
+    if (!openDays.get(dayKeyStr)) {
+      openDays.set(dayKeyStr, true);
+      document.querySelector(`[data-day-item="${dayKeyStr}"]`)?.classList.add("open");
+    }
+    
+    setTimeout(() => {
+      const el = document.querySelector(`[data-day-item="${dayKeyStr}"]`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.style.transition = "background-color 0.5s ease";
+        const oldBg = el.style.backgroundColor;
+        el.style.backgroundColor = "rgba(139, 92, 246, 0.1)";
+        setTimeout(() => el.style.backgroundColor = oldBg, 1500);
+      }
+    }, 100);
+    showToast(`${targetW}주차 ${targetD}일차 학습을 이어갑니다.`);
+  } else {
+    showToast("모든 학습 과정을 완료했습니다! 🎉");
+  }
+});
+
 // ── 전체 열기 / 닫기 ─────────────────────────────────────
 document.getElementById("expandAllBtn")?.addEventListener("click", () => {
   CURRICULUM.forEach(week => {
@@ -3366,3 +3488,460 @@ scrollTopBtn?.addEventListener('click', () => {
     behavior: 'instant'
   });
 });
+
+
+// ── Ctrl+F 커스텀 전체 검색 ────────────────────────────────────────────
+
+const _srchStyle = document.createElement("style");
+_srchStyle.textContent = `
+  .s-bar-wrap {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 30000;
+    display: flex;
+    justify-content: center;
+    padding: 14px 16px;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(-120%);
+    transition: opacity 0.22s ease, transform 0.24s cubic-bezier(.2,.8,.2,1);
+  }
+
+  .s-bar-wrap.open {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .s-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 10px;
+    background: rgba(10, 13, 32, 0.97);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 16px;
+    box-shadow:
+      0 16px 48px rgba(0, 0, 0, 0.55),
+      0 0 0 1px rgba(139, 92, 246, 0.1) inset;
+    backdrop-filter: blur(24px) saturate(140%);
+    width: min(520px, calc(100vw - 32px));
+  }
+
+  .s-icon {
+    flex: 0 0 18px;
+    color: #8b5cf6;
+  }
+
+  .s-icon svg {
+    display: block;
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .s-input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: #f8fafc;
+    font: 500 0.89rem/1 'Pretendard', sans-serif;
+    min-width: 0;
+    padding: 4px 2px;
+  }
+
+  .s-input::placeholder { color: #475569; }
+  .s-input::-webkit-search-cancel-button { display: none; }
+
+  .s-count {
+    flex: 0 0 auto;
+    font: 600 0.72rem/1 'JetBrains Mono', monospace;
+    color: #475569;
+    white-space: nowrap;
+    min-width: 44px;
+    text-align: right;
+    padding: 0 4px;
+    transition: color 0.15s;
+  }
+
+  .s-count.hit { color: #a78bfa; }
+
+  .s-sep {
+    width: 1px;
+    height: 20px;
+    background: rgba(255,255,255,0.07);
+    flex-shrink: 0;
+  }
+
+  .s-btn {
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.03);
+    color: #94a3b8;
+    cursor: pointer;
+    transition: background 0.14s, color 0.14s, border-color 0.14s;
+  }
+
+  .s-btn:hover:not(:disabled) {
+    background: rgba(139, 92, 246, 0.16);
+    color: #a78bfa;
+    border-color: rgba(139, 92, 246, 0.28);
+  }
+
+  .s-btn:disabled { opacity: 0.28; cursor: not-allowed; }
+
+  .s-btn svg {
+    width: 13px;
+    height: 13px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* 텍스트 하이라이트 */
+  mark.sh {
+    background: rgba(251, 191, 36, 0.28);
+    color: inherit;
+    border-radius: 2px;
+    padding: 1px 0;
+  }
+
+  mark.sh.active {
+    background: rgba(251, 191, 36, 0.82);
+    color: #1a0f00;
+    border-radius: 2px;
+    outline: 2px solid rgba(251, 191, 36, 0.5);
+    outline-offset: 1px;
+  }
+
+  /* 메모 textarea 하이라이트 */
+  .memo-textarea.sh-memo {
+    border-color: rgba(251, 191, 36, 0.38) !important;
+    background: rgba(251, 191, 36, 0.04) !important;
+  }
+
+  .memo-textarea.sh-memo-active {
+    border-color: rgba(251, 191, 36, 0.75) !important;
+    background: rgba(251, 191, 36, 0.08) !important;
+    box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.18) !important;
+  }
+`;
+document.head.appendChild(_srchStyle);
+
+// ── 검색 바 HTML ─────────────────────────────────────────────
+const _srchWrap = document.createElement("div");
+_srchWrap.className = "s-bar-wrap";
+_srchWrap.setAttribute("role", "search");
+_srchWrap.innerHTML = `
+  <div class="s-bar">
+    <span class="s-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+    </span>
+    <input
+      class="s-input"
+      id="sInput"
+      type="search"
+      placeholder="검색어를 입력하세요…"
+      autocomplete="off"
+      spellcheck="false"
+      aria-label="콘텐츠 내 검색"
+    >
+    <span class="s-count" id="sCnt" aria-live="polite" aria-atomic="true"></span>
+    <div class="s-sep"></div>
+    <button class="s-btn" id="sPrev" aria-label="이전 결과 (←)" title="이전 (←)" disabled>
+      <svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+    </button>
+    <button class="s-btn" id="sNext" aria-label="다음 결과 (→)" title="다음 (→)" disabled>
+      <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="s-sep"></div>
+    <button class="s-btn" id="sClose" aria-label="검색 닫기 (Esc)" title="닫기 (Esc)">
+      <svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+`;
+document.body.appendChild(_srchWrap);
+
+const _sInput = document.getElementById("sInput");
+const _sCnt = document.getElementById("sCnt");
+const _sPrev = document.getElementById("sPrev");
+const _sNext = document.getElementById("sNext");
+const _sClose = document.getElementById("sClose");
+
+// 매치 목록: { type: 'text', el: markEl } | { type: 'memo', el: textareaEl }
+let _sMatches = [];
+let _sIdx = -1;
+let _sTimer = null;
+
+// 검색 네비게이션이 열어 놓은 섹션 추적
+let _srchOpened = { weeks: new Set(), days: new Set(), topics: new Set() };
+
+// 일반 텍스트 검색 대상 선택자 (textarea 제외)
+const _SRCH_SEL =
+  ".week-title-text, .day-title-text, " +
+  ".topic-name, .topic-desc-text, " +
+  ".practice-info-text, .deliverable-text";
+
+// ── 열기 / 닫기 ─────────────────────────────────────────────
+function _srchOpen() {
+  _srchWrap.classList.add("open");
+  _sInput.focus();
+  _sInput.select();
+}
+
+function _srchClose() {
+  _srchWrap.classList.remove("open");
+  _clearAll();
+  _sInput.value = "";
+  _updateCnt();
+}
+
+// ── 하이라이트 + 검색으로 열린 섹션 전체 초기화 ─────────────────
+function _clearAll() {
+  // 텍스트 mark 제거
+  _sMatches.forEach(m => {
+    if (m.type === "text") {
+      const p = m.el.parentNode;
+      if (!p) return;
+      p.replaceChild(document.createTextNode(m.el.textContent), m.el);
+      p.normalize();
+    } else {
+      m.el.classList.remove("sh-memo", "sh-memo-active");
+    }
+  });
+  _sMatches = [];
+  _sIdx = -1;
+
+  // 검색이 열어 놓은 섹션 모두 닫기
+  _closeSearchOpened(_srchOpened);
+  _srchOpened = { weeks: new Set(), days: new Set(), topics: new Set() };
+}
+
+// ── 섹션 닫기 헬퍼 ──────────────────────────────────────────
+function _closeSearchOpened(opened) {
+  opened.topics.forEach(key => {
+    const el = document.querySelector(`[data-topic-item="${key}"]`);
+    if (el) { el.classList.remove("open"); openTopics.set(key, false); }
+  });
+  opened.days.forEach(key => {
+    const el = document.querySelector(`[data-day-item="${key}"]`);
+    if (el) { el.classList.remove("open"); openDays.set(key, false); }
+  });
+  opened.weeks.forEach(w => {
+    const el = document.querySelector(`[data-week-item="${w}"]`);
+    if (el) { el.classList.remove("open"); openWeeks.delete(w); }
+  });
+}
+
+// ── 카운터 갱신 ──────────────────────────────────────────────
+function _updateCnt() {
+  const total = _sMatches.length;
+  const cur = total > 0 ? _sIdx + 1 : 0;
+  _sCnt.textContent = total > 0
+    ? `${cur} / ${total}`
+    : (_sInput.value.trim() ? "없음" : "");
+  _sCnt.classList.toggle("hit", total > 0);
+  _sPrev.disabled = total === 0;
+  _sNext.disabled = total === 0;
+}
+
+// ── 검색 실행 ────────────────────────────────────────────────
+function _doSearch(q) {
+  _clearAll();
+  if (!q.trim()) { _updateCnt(); return; }
+
+  const root = document.getElementById("weeksList");
+  if (!root) return;
+
+  const lq = q.toLowerCase();
+
+  // 1) 일반 텍스트 요소 검색
+  root.querySelectorAll(_SRCH_SEL).forEach(el => {
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    let n;
+    while ((n = walker.nextNode())) nodes.push(n);
+
+    nodes.forEach(textNode => {
+      const text = textNode.textContent;
+      const ltext = text.toLowerCase();
+      if (!ltext.includes(lq)) return;
+
+      const frag = document.createDocumentFragment();
+      let last = 0, idx;
+
+      while ((idx = ltext.indexOf(lq, last)) !== -1) {
+        if (idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+        const mark = document.createElement("mark");
+        mark.className = "sh";
+        mark.textContent = text.slice(idx, idx + q.length);
+        frag.appendChild(mark);
+        _sMatches.push({ type: "text", el: mark });
+        last = idx + q.length;
+      }
+
+      if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+      textNode.parentNode.replaceChild(frag, textNode);
+    });
+  });
+
+  // 2) 메모 textarea 검색 (값은 평문으로 읽고, 하이라이트는 CSS 테두리로 표현)
+  root.querySelectorAll(".memo-textarea").forEach(ta => {
+    if (ta.value.toLowerCase().includes(lq)) {
+      ta.classList.add("sh-memo");
+      _sMatches.push({ type: "memo", el: ta });
+    }
+  });
+
+  if (_sMatches.length > 0) {
+    _sIdx = 0;
+    void _activateMark(0);
+  }
+  _updateCnt();
+}
+
+// ── 특정 결과로 이동 ─────────────────────────────────────────
+async function _activateMark(idx) {
+  // 현재 활성 표시 해제
+  _sMatches.forEach(m => {
+    if (m.type === "text") m.el.classList.remove("active");
+    else m.el.classList.remove("sh-memo-active");
+  });
+  if (idx < 0 || idx >= _sMatches.length) return;
+
+  const match = _sMatches[idx];
+  const target = match.el; // mark 요소 또는 textarea 요소
+
+  // ── 이전 검색 네비게이션으로 열린 섹션 중 새 목표와 겹치지 않는 것 닫기 ──
+  const newWeekEl = target.closest("[data-week-item]");
+  const newDayEl = target.closest("[data-day-item]");
+  const newTopicEl = target.closest("[data-topic-item]");
+
+  const needWeek = newWeekEl ? String(newWeekEl.dataset.weekItem) : null;
+  const needDay = newDayEl ? newDayEl.dataset.dayItem : null;
+  const needTopic = newTopicEl ? newTopicEl.dataset.topicItem : null;
+
+  // 새 결과에 필요하지 않은 이전 열린 섹션 닫기
+  const toClose = {
+    weeks: new Set([..._srchOpened.weeks].filter(w => String(w) !== needWeek)),
+    days: new Set([..._srchOpened.days].filter(k => k !== needDay)),
+    topics: new Set([..._srchOpened.topics].filter(k => k !== needTopic))
+  };
+  _closeSearchOpened(toClose);
+
+  // 추적 세트 업데이트 (닫은 것 제거, 유지된 것만 남김)
+  _srchOpened = {
+    weeks: new Set([..._srchOpened.weeks].filter(w => !toClose.weeks.has(w))),
+    days: new Set([..._srchOpened.days].filter(k => !toClose.days.has(k))),
+    topics: new Set([..._srchOpened.topics].filter(k => !toClose.topics.has(k)))
+  };
+
+  // ── 새 결과의 조상 섹션 펼치기 (닫혀 있는 것만) ──────────────
+  if (newWeekEl && !newWeekEl.classList.contains("open")) {
+    const w = Number(newWeekEl.dataset.weekItem);
+    openWeeks.add(w);
+    newWeekEl.classList.add("open");
+    _srchOpened.weeks.add(w);
+  }
+
+  if (newDayEl && !newDayEl.classList.contains("open")) {
+    openDays.set(needDay, true);
+    newDayEl.classList.add("open");
+    _srchOpened.days.add(needDay);
+  }
+
+  if (newTopicEl && !newTopicEl.classList.contains("open")) {
+    openTopics.set(needTopic, true);
+    newTopicEl.classList.add("open");
+    _srchOpened.topics.add(needTopic);
+  }
+
+  // 활성 표시 적용
+  if (match.type === "text") match.el.classList.add("active");
+  else match.el.classList.add("sh-memo-active");
+
+  // CSS 트랜지션 대기 후 스크롤
+  await new Promise(r => setTimeout(r, 340));
+  target.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+// ── 다음 / 이전 ─────────────────────────────────────────────
+function _sGoNext() {
+  if (!_sMatches.length) return;
+  _sIdx = (_sIdx + 1) % _sMatches.length;
+  void _activateMark(_sIdx);
+  _updateCnt();
+}
+
+function _sGoPrev() {
+  if (!_sMatches.length) return;
+  _sIdx = (_sIdx - 1 + _sMatches.length) % _sMatches.length;
+  void _activateMark(_sIdx);
+  _updateCnt();
+}
+
+// ── 이벤트 바인딩 ───────────────────────────────────────────
+document.addEventListener("keydown", ev => {
+  if ((ev.ctrlKey || ev.metaKey) && ev.key === "f") {
+    if (document.querySelector(".delete-modal-overlay")) return;
+    ev.preventDefault();
+    _srchOpen();
+    return;
+  }
+
+  if (!_srchWrap.classList.contains("open")) return;
+
+  if (ev.key === "Escape") { ev.preventDefault(); _srchClose(); return; }
+
+  // 화살표 네비게이션 (오른쪽: 다음, 왼쪽: 이전)
+  if (ev.key === "ArrowRight" || ev.key === "ArrowLeft") {
+    const active = document.activeElement;
+
+    // 메모 입력 중일 때는 화살표 무시
+    if (active && active.tagName === "TEXTAREA") return;
+
+    if (active === _sInput) {
+      // 검색창 내에서는 화살표 커서 이동을 방해하지 않음
+      // 커서가 양끝에 도달했을 때만 네비게이션 수행
+      if (ev.key === "ArrowRight" && _sInput.selectionStart === _sInput.value.length) {
+        ev.preventDefault();
+        _sGoNext();
+      } else if (ev.key === "ArrowLeft" && _sInput.selectionEnd === 0) {
+        ev.preventDefault();
+        _sGoPrev();
+      }
+      return;
+    }
+
+    // 다른 곳에 포커스가 있다면 화살표 네비게이션 수행
+    ev.preventDefault();
+    if (ev.key === "ArrowRight") _sGoNext();
+    if (ev.key === "ArrowLeft") _sGoPrev();
+  }
+});
+
+_sInput.addEventListener("input", () => {
+  clearTimeout(_sTimer);
+  _sTimer = setTimeout(() => _doSearch(_sInput.value), 200);
+});
+
+_sNext.addEventListener("click", _sGoNext);
+_sPrev.addEventListener("click", _sGoPrev);
+_sClose.addEventListener("click", _srchClose);
