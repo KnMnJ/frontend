@@ -2613,8 +2613,6 @@ function buildLearningPrompt(w, d) {
     "4. 바이브 코딩을 사용할 때 AI에게 맡겨도 되는 부분과 내가 직접 이해해야 하는 부분을 구분해줘.",
     "5. 자주 하는 실수와 개발자도구로 확인하는 방법을 알려줘.",
     "6. 마지막에 오늘 배운 내용을 점검할 복습 문제와 미니 과제를 내줘.",
-    "",
-    "한꺼번에 너무 많은 내용을 주지 말고, 학습 순서에 따라 단계별로 진행해줘."
   ];
 
   return sections.filter((line, index) => line !== "" || sections[index - 1] !== "").join("\n").trim();
@@ -2954,7 +2952,7 @@ document.getElementById("weeksList")?.addEventListener("input", e => {
 // ── 이어하기 ─────────────────────────────────────────────
 document.getElementById("continueLearningBtn")?.addEventListener("click", () => {
   let targetW = null, targetD = null;
-  
+
   for (const week of CURRICULUM) {
     const w = week.week;
     for (const day of week.days) {
@@ -2967,19 +2965,19 @@ document.getElementById("continueLearningBtn")?.addEventListener("click", () => 
     }
     if (targetW) break;
   }
-  
+
   if (targetW && targetD) {
     if (!openWeeks.has(targetW)) {
       openWeeks.add(targetW);
       document.querySelector(`[data-week-item="${targetW}"]`)?.classList.add("open");
     }
-    
+
     const dayKeyStr = `${targetW}-${targetD}`;
     if (!openDays.get(dayKeyStr)) {
       openDays.set(dayKeyStr, true);
       document.querySelector(`[data-day-item="${dayKeyStr}"]`)?.classList.add("open");
     }
-    
+
     setTimeout(() => {
       const el = document.querySelector(`[data-day-item="${dayKeyStr}"]`);
       if (el) {
