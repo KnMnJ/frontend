@@ -2478,6 +2478,13 @@ async function openFile(id) {
     return;
   }
 
+  // 사용자 클릭 직후에 미리 새 탭을 열어 팝업 차단을 방지합니다.
+  const newWindow = window.open("", "_blank");
+  if (!newWindow) {
+    showToast("팝업 차단을 해제하고 다시 시도하세요.");
+    return;
+  }
+
   // HTML 파일인 경우 같은 날짜(DAY)에 업로드된 다른 파일들의 URL로 경로를 교체하여 보여줍니다.
   if (file.name.toLowerCase().endsWith(".html") || file.name.toLowerCase().endsWith(".htm")) {
     try {
@@ -2514,26 +2521,23 @@ async function openFile(id) {
 
       htmlText = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
 
-      // 4. 새로운 Blob URL을 생성하여 새 탭에서 열기
+      // 4. 새로운 Blob URL을 생성하여 미리 열어둔 새 탭의 주소로 이동
       const blob = new Blob([htmlText], { type: "text/html;charset=utf-8" });
       const blobUrl = URL.createObjectURL(blob);
       
-      const opened = window.open(blobUrl, "_blank", "noopener");
-      if (!opened) {
-        showToast("팝업 차단을 해제하고 다시 시도하세요.");
-      }
+      newWindow.location.href = blobUrl;
       return;
     } catch (error) {
       console.error("HTML 뷰어 에러:", error);
-      // fetch 실패 시 (CORS 에러 등) 기본 방식으로 열기
       showToast("CORS 문제로 HTML 렌더링에 실패하여 원본 파일을 엽니다.");
+      // fetch 실패 시 원본 파일 URL로 이동
+      newWindow.location.href = file.content;
+      return;
     }
   }
 
-  const opened = window.open(file.content, "_blank", "noopener");
-  if (!opened) {
-    showToast("팝업 차단을 해제하고 다시 시도하세요.");
-  }
+  // HTML이 아닌 일반 파일도 미리 열어둔 탭에서 이동
+  newWindow.location.href = file.content;
 }
 
 // ── 개별 일차 UI 갱신 ─────────────────────────────────────
