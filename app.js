@@ -2470,12 +2470,64 @@ async function deleteFile(id, w, d) {
 }
 
 // 파일 클릭 → Firebase 다운로드 URL을 새 탭에서 엽니다.
-function openFile(id) {
+async function openFile(id) {
   const file = findFileById(id);
 
   if (!file?.content) {
     showToast("파일 정보를 찾지 못했습니다.");
     return;
+  }
+
+  // HTML 파일인 경우 같은 날짜(DAY)에 업로드된 다른 파일들의 URL로 경로를 교체하여 보여줍니다.
+  if (file.name.toLowerCase().endsWith(".html") || file.name.toLowerCase().endsWith(".htm")) {
+    try {
+      showToast("HTML 파일을 렌더링 중입니다... ⏳");
+      
+      // 1. HTML 내용 가져오기
+      const response = await fetch(file.content);
+      if (!response.ok) throw new Error("HTML 파일을 불러오는데 실패했습니다.");
+      let htmlText = await response.text();
+
+      // 2. 같은 날짜(DAY)에 업로드된 다른 파일들 찾기
+      const dayFiles = allFiles.filter(f => f.key === file.key && f.id !== file.id);
+
+      // 3. HTML 파싱 및 경로 교체 (이미지, CSS, JS)
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlText, "text/html");
+
+      const replaceUrl = (element, attribute) => {
+        const url = element.getAttribute(attribute);
+        // 상대 경로인 경우에만 처리 (http, https, data: 등으로 시작하지 않는 경우)
+        if (url && !url.match(/^(http|data:|#)/i)) {
+          // 파일명과 일치하거나 파일명으로 끝나는 파일 찾기 (예: ./cat.jpg -> cat.jpg)
+          const matchFile = dayFiles.find(f => url.endsWith(f.name) || f.name === url);
+          if (matchFile) {
+            element.setAttribute(attribute, matchFile.content);
+          }
+        }
+      };
+
+      doc.querySelectorAll("img").forEach(img => replaceUrl(img, "src"));
+      doc.querySelectorAll("link[rel='stylesheet']").forEach(link => replaceUrl(link, "href"));
+      doc.querySelectorAll("script[src]").forEach(script => replaceUrl(script, "src"));
+      doc.querySelectorAll("source").forEach(source => replaceUrl(source, "src"));
+
+      htmlText = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+
+      // 4. 새로운 Blob URL을 생성하여 새 탭에서 열기
+      const blob = new Blob([htmlText], { type: "text/html;charset=utf-8" });
+      const blobUrl = URL.createObjectURL(blob);
+      
+      const opened = window.open(blobUrl, "_blank", "noopener");
+      if (!opened) {
+        showToast("팝업 차단을 해제하고 다시 시도하세요.");
+      }
+      return;
+    } catch (error) {
+      console.error("HTML 뷰어 에러:", error);
+      // fetch 실패 시 (CORS 에러 등) 기본 방식으로 열기
+      showToast("CORS 문제로 HTML 렌더링에 실패하여 원본 파일을 엽니다.");
+    }
   }
 
   const opened = window.open(file.content, "_blank", "noopener");
