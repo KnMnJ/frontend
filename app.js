@@ -34,8 +34,6 @@ const CURRICULUM = [
           { name: "문서 설정 태그", desc: "<title>로 브라우저 탭 제목을 정하고, <meta charset>과 <meta name=\"viewport\">를 설정한다." },
           { name: "태그 중첩 관계", desc: "부모·자식·형제 요소를 구분하고, 태그를 올바른 순서로 열고 닫는 방법을 배운다." }
         ],
-        practice: "",
-        deliverable: ""
       },
       {
         day: 2, title: "텍스트와 목록 태그",
@@ -47,8 +45,6 @@ const CURRICULUM = [
           { name: "순서 없는 목록", desc: "<ul>과 <li>를 사용해 기술, 경력, 준비물처럼 순서가 중요하지 않은 항목을 나열한다." },
           { name: "순서 있는 목록", desc: "<ol>과 <li>를 사용해 학습 순서나 작업 절차처럼 순서가 중요한 내용을 표현한다." }
         ],
-        practice: "",
-        deliverable: ""
       },
       {
         day: 3, title: "링크, 이미지, 파일 경로",
@@ -60,8 +56,6 @@ const CURRICULUM = [
           { name: "절대 경로와 상대 경로", desc: "웹 주소 전체를 사용하는 절대 경로와 현재 파일 위치를 기준으로 하는 상대 경로를 구분한다." },
           { name: "경로 기호", desc: "./는 현재 폴더, ../는 상위 폴더를 의미한다는 것을 배우고 여러 페이지를 연결한다." }
         ],
-        practice: "",
-        deliverable: ""
       },
       {
         day: 4, title: "시맨틱 HTML과 페이지 구조",
@@ -73,8 +67,6 @@ const CURRICULUM = [
           { name: "보조 콘텐츠와 하단 정보", desc: "부가 정보에는 <aside>, 저작권·연락처 등 하단 정보에는 <footer>를 사용한다." },
           { name: "div와 시맨틱 태그의 차이", desc: "의미가 있는 영역은 전용 태그를 사용하고, 단순히 요소를 묶을 때만 <div>를 사용한다." }
         ],
-        practice: "",
-        deliverable: ""
       },
       {
         day: 5, title: "표와 입력 폼",
@@ -87,8 +79,6 @@ const CURRICULUM = [
           { name: "라벨과 입력창 연결", desc: "<label for=\"\">의 for 값과 <input id=\"\">의 id를 일치시켜 입력창의 설명을 명확하게 만든다." },
           { name: "입력 데이터 속성", desc: "name, value, placeholder, required 속성이 각각 어떤 역할을 하는지 익힌다." }
         ],
-        practice: "",
-        deliverable: ""
       },
       {
         day: 6, title: "개발자도구와 HTML 오류 수정",
@@ -100,8 +90,6 @@ const CURRICULUM = [
           { name: "HTML 구조 오류", desc: "닫는 태그 누락, 잘못된 제목 순서, 상호작용 요소 중첩 등 자주 발생하는 오류를 수정한다." },
           { name: "접근성 오류", desc: "이미지의 alt 누락, 입력창의 label 누락, 의미가 불분명한 링크 문구를 점검한다." }
         ],
-        practice: "",
-        deliverable: ""
       },
       {
         day: 7, title: "HTML 종합 프로젝트와 복습",
@@ -115,8 +103,6 @@ const CURRICULUM = [
           { name: "최종 코드 점검", desc: "제목 계층, 시맨틱 태그, 파일 경로, 이미지 대체 텍스트, 입력창 라벨을 확인한다." },
           { name: "AI 코드 리뷰 활용", desc: "AI에게 코드를 새로 작성하게 하기보다 문법 오류, 접근성 문제, 불필요한 태그를 찾아달라고 요청한 뒤 직접 수정한다." }
         ],
-        practice: "",
-        deliverable: ""
       }
     ]
   },
@@ -134,8 +120,6 @@ const CURRICULUM = [
           { name: "기본 선택자", desc: "태그 선택자, 클래스 선택자, 아이디 선택자를 사용해 스타일을 적용할 요소를 지정한다." },
           { name: "class와 id의 차이", desc: "여러 요소에 반복 적용하는 스타일에는 class, 페이지에서 고유한 요소를 식별할 때는 id를 사용한다." }
         ],
-        practice: "",
-        deliverable: ""
       },
       {
         day: 2, title: "CSS 선택자와 스타일 적용 우선순위",
@@ -150,8 +134,6 @@ const CURRICULUM = [
           { name: "우선순위", desc: "인라인 스타일, 아이디, 클래스, 태그 선택자가 충돌할 때 어떤 스타일이 적용되는지 배운다." },
           { name: "선언 순서와 !important", desc: "우선순위가 같으면 나중에 작성한 스타일이 적용되며, !important는 불가피한 경우가 아니면 사용하지 않는 이유를 익힌다." }
         ],
-        practice: "",
-        deliverable: ""
       },
       {
         day: 3, title: "박스 모델과 크기 설정",
@@ -166,8 +148,6 @@ const CURRICULUM = [
           { name: "최소·최대 크기", desc: "min-width, max-width, min-height, max-height로 요소 크기의 범위를 제한한다." },
           { name: "콘텐츠 넘침 처리", desc: "overflow: visible, hidden, auto, scroll을 사용해 영역을 벗어난 콘텐츠를 처리한다." }
         ],
-        practice: "",
-        deliverable: ""
       },
       {
         day: 4, title: "색상, 배경, 글꼴과 텍스트",
@@ -182,8 +162,6 @@ const CURRICULUM = [
           { name: "텍스트 정렬", desc: "text-align으로 왼쪽·가운데·오른쪽 정렬을 설정한다." },
           { name: "텍스트 꾸미기", desc: "text-decoration, text-transform, text-shadow로 밑줄, 대소문자, 그림자 등을 적용한다." }
         ],
-        practice: "",
-        deliverable: ""
       },
       {
         day: 5, title: "단위와 요소의 표시 방식",
@@ -198,8 +176,6 @@ const CURRICULUM = [
           { name: "인라인 블록 요소", desc: "display: inline-block으로 같은 줄에 배치하면서 너비, 높이, 여백을 설정한다." },
           { name: "요소 숨기기", desc: "display: none, visibility: hidden, opacity: 0의 차이를 구분한다." }
         ],
-        practice: "",
-        deliverable: ""
       },
       {
         day: 6, title: "위치 지정과 사용자 상호작용 스타일",
@@ -215,8 +191,6 @@ const CURRICULUM = [
           { name: "가상 요소", desc: "::before, ::after를 사용해 HTML을 추가하지 않고 장식용 콘텐츠를 삽입한다." },
           { name: "마우스 모양", desc: "cursor: pointer 등을 사용해 클릭할 수 있는 요소라는 시각적 단서를 제공한다." }
         ],
-        practice: "",
-        deliverable: ""
       },
       {
         day: 7, title: "HTML 포트폴리오 CSS 적용과 종합 복습",
@@ -233,8 +207,6 @@ const CURRICULUM = [
           { name: "개발자도구를 활용한 수정", desc: "Elements와 Styles 패널에서 적용된 CSS, 상속된 속성, 덮어씌워진 선언을 확인한다." },
           { name: "AI 코드 리뷰 활용", desc: "AI에게 디자인을 전면 재작성하게 하기보다 중복된 CSS, 지나치게 강한 선택자, 불필요한 !important, 접근성 문제를 점검하게 한다." }
         ],
-        practice: "",
-        deliverable: ""
       }
     ]
   },
@@ -253,8 +225,6 @@ const CURRICULUM = [
           { name: "교차축 정렬", desc: "align-items를 사용해 요소를 위쪽, 가운데, 아래쪽 또는 높이에 맞게 정렬한다." },
           { name: "요소 사이 간격", desc: "gap, row-gap, column-gap을 사용해 각 아이템 사이의 간격을 설정한다." }
         ],
-        practice: "",
-        deliverable: ""
       },
       {
         day: 2, title: "Flex 아이템의 크기와 줄바꿈",
@@ -270,8 +240,6 @@ const CURRICULUM = [
           { name: "자동 여백 활용", desc: "margin-left: auto 등을 사용해 특정 요소를 반대쪽 끝으로 밀어낸다." },
           { name: "아이템 순서 변경", desc: "order로 화면에 표시되는 순서를 바꿀 수 있지만, HTML의 실제 읽기 순서와 달라질 수 있다는 점을 배운다." }
         ],
-        practice: "",
-        deliverable: ""
       },
       {
         day: 3, title: "CSS Grid 기본 구조",
@@ -287,8 +255,6 @@ const CURRICULUM = [
           { name: "아이템 위치 지정", desc: "grid-column, grid-row를 사용해 아이템이 차지할 시작선과 끝선을 정한다." },
           { name: "여러 칸 차지하기", desc: "span을 사용해 하나의 아이템이 여러 열이나 행을 차지하도록 만든다." }
         ],
-        practice: "",
-        deliverable: ""
       },
       {
         day: 4, title: "CSS Grid 반응형·고급 기능",
@@ -303,8 +269,6 @@ const CURRICULUM = [
           { name: "영역 이름 지정", desc: "grid-template-areas로 header, sidebar, main, footer 같은 영역 이름을 정해 레이아웃을 작성한다." },
           { name: "Grid 내부 정렬", desc: "justify-items, align-items, place-items로 각 Grid 셀 안의 아이템을 정렬한다." }
         ],
-        practice: "",
-        deliverable: ""
       },
       {
         day: 5, title: "반응형 웹과 미디어 쿼리",
@@ -319,8 +283,6 @@ const CURRICULUM = [
           { name: "반응형 이미지", desc: "max-width: 100%와 height: auto를 사용해 이미지가 부모 영역을 벗어나지 않도록 한다." },
           { name: "개발자도구 기기 모드", desc: "Chrome 개발자도구에서 모바일, 태블릿, 데스크톱 너비로 페이지를 확인한다." }
         ],
-        practice: "",
-        deliverable: ""
       },
       {
         day: 6, title: "유동적인 크기와 반응형 UI 패턴",
@@ -335,8 +297,6 @@ const CURRICULUM = [
           { name: "가로 넘침 처리", desc: "긴 표나 차트는 overflow-x: auto를 적용해 작은 화면에서 가로 스크롤로 확인할 수 있게 한다." },
           { name: "Flexbox와 Grid 선택 기준", desc: "한 방향의 단순 정렬은 Flexbox, 행과 열을 함께 관리하는 전체 레이아웃은 Grid를 우선 사용한다." }
         ],
-        practice: "",
-        deliverable: ""
       },
       {
         day: 7, title: "반응형 대시보드 종합 프로젝트",
@@ -353,8 +313,6 @@ const CURRICULUM = [
           { name: "개발자도구 점검", desc: "Grid·Flex 오버레이를 켜서 열, 행, 간격, 정렬 기준이 의도한 대로 적용되었는지 확인한다." },
           { name: "AI 코드 리뷰 활용", desc: "AI에게 고정 너비 남용, 불필요한 미디어 쿼리, 중복된 브레이크포인트, 가로 스크롤 발생 위치를 점검하게 한다." }
         ],
-        practice: "",
-        deliverable: ""
       }
     ]
   },
@@ -374,8 +332,6 @@ const CURRICULUM = [
           { name: "자료형 확인", desc: "typeof 연산자를 사용해 변수에 저장된 값의 자료형을 확인한다." },
           { name: "문자열 템플릿", desc: "백틱과 ${변수}를 사용하는 템플릿 리터럴로 문자열 안에 값을 삽입한다." }
         ],
-        practice: "",
-        deliverable: ""
       },
       {
         day: 2, title: "연산자와 자료형 변환",
@@ -391,8 +347,6 @@ const CURRICULUM = [
           { name: "NaN 확인", desc: "숫자로 변환할 수 없는 값이 NaN이 되는 이유를 이해하고 Number.isNaN()으로 확인한다." },
           { name: "Truthy와 Falsy", desc: "조건문에서 false, 0, 빈 문자열, null, undefined, NaN 등이 거짓으로 평가되는 원리를 배운다." }
         ],
-        practice: "",
-        deliverable: ""
       },
       {
         day: 3, title: "조건문과 분기 처리",
@@ -407,8 +361,6 @@ const CURRICULUM = [
           { name: "조건 검사 순서", desc: "더 구체적이고 제한적인 조건을 먼저 검사하고, 넓은 조건은 뒤에 배치한다." },
           { name: "입력값 검증", desc: "빈 값, 숫자가 아닌 값, 음수 등 잘못된 데이터가 들어왔을 때 계산을 중단하거나 오류 메시지를 만든다." }
         ],
-        practice: "",
-        deliverable: ""
       },
       {
         day: 4, title: "반복문과 반복 제어",
@@ -423,8 +375,6 @@ const CURRICULUM = [
           { name: "누적값 계산", desc: "반복문 바깥에 합계 변수를 만들고 반복할 때마다 값을 더해 총합이나 평균을 계산한다." },
           { name: "중첩 반복문", desc: "반복문 안에 반복문을 작성해 행과 열 또는 여러 조건의 조합을 처리하는 방식을 익힌다." }
         ],
-        practice: "",
-        deliverable: ""
       },
       {
         day: 5, title: "함수와 스코프",
@@ -440,8 +390,6 @@ const CURRICULUM = [
           { name: "지역·전역 스코프", desc: "함수나 블록 안에서 선언한 변수와 바깥에서 선언한 변수의 사용 가능 범위를 구분한다." },
           { name: "순수 함수", desc: "같은 입력값을 받으면 같은 결과를 반환하고 외부 값을 직접 변경하지 않는 함수의 장점을 배운다." }
         ],
-        practice: "",
-        deliverable: ""
       },
       {
         day: 6, title: "배열과 객체를 이용한 데이터 처리",
@@ -458,8 +406,6 @@ const CURRICULUM = [
           { name: "객체 생성과 접근", desc: "{ 키: 값 } 형태로 관련 데이터를 묶고 점 표기법 또는 대괄호 표기법으로 값에 접근한다." },
           { name: "객체 수정", desc: "새로운 속성을 추가하거나 기존 속성값을 변경하고 delete로 속성을 삭제한다." }
         ],
-        practice: "",
-        deliverable: ""
       },
       {
         day: 7, title: "구조 분해·스프레드와 수익률 계산기 제작",
@@ -478,8 +424,6 @@ const CURRICULUM = [
           { name: "Console 기반 테스트", desc: "정상값, 0, 음수, 빈 값 등 여러 데이터를 직접 전달해 함수의 결과와 예외 처리를 확인한다." },
           { name: "AI 코드 리뷰 활용", desc: "AI에게 불필요한 반복문, 중복 계산, 의미가 불분명한 변수명, 입력값 검증 누락을 찾아달라고 요청한다." }
         ],
-        practice: "",
-        deliverable: ""
       }
     ]
   },
@@ -1939,6 +1883,7 @@ const openWeeks = new Set();
 const openDays = new Map(); // "w-d" → boolean
 const openTopics = new Map(); // "w-d-t" → boolean
 const memoSaveTimers = new Map();
+let isLoggedIn = false;
 
 // ── 유틸리티 ─────────────────────────────────────────────
 const dayKey = (w, d) => `w${w}d${d}`;
@@ -2050,10 +1995,6 @@ function completedDays() {
 
 function weekProgress(w) {
   return CURRICULUM[w - 1].days.filter(day => isDayDone(w, day.day)).length;
-}
-
-function saveFiles() {
-  saveLocalCache();
 }
 
 function ext(fileName) {
@@ -2194,7 +2135,7 @@ async function handleFileUpload(w, d, fileList) {
       await setDoc(doc(db, "files", id), newFile);
 
       allFiles.push(newFile);
-      saveFiles();
+      saveLocalCache();
       refreshDayUI(w, d);
       updateProgress();
       updateWeekBadge(w);
@@ -2259,7 +2200,7 @@ function showDeleteModal(file) {
           <span class="delete-modal-file-name"></span>
         </div>
 
-        <label class="delete-modal-field">
+        <label class="delete-modal-field" style="display: ${isLoggedIn ? 'none' : 'block'};">
           <span>삭제 비밀번호</span>
           <div class="delete-modal-input-wrap">
             <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -2328,6 +2269,11 @@ function showDeleteModal(file) {
     };
 
     const submit = async () => {
+      if (isLoggedIn) {
+        finish(true);
+        return;
+      }
+
       const password = input.value;
 
       if (!password) {
@@ -2402,17 +2348,6 @@ function showDeleteModal(file) {
 async function deleteFile(id, w, d) {
   const normalizedId = String(id);
   const file = findFileById(normalizedId);
-
-  console.log("[삭제 시작]", {
-    clickedId: normalizedId,
-    fileFound: Boolean(file),
-    storedIds: allFiles.map(item => ({
-      id: item.id,
-      idType: typeof item.id,
-      firestoreId: item.firestoreId
-    }))
-  });
-
   if (!file) {
     console.error("삭제할 파일을 allFiles에서 찾지 못했습니다.", normalizedId);
     showToast("삭제할 파일 정보를 찾지 못했습니다. 새로고침 후 다시 시도하세요.");
@@ -2457,7 +2392,7 @@ async function deleteFile(id, w, d) {
       String(item.firestoreId ?? "") !== normalizedId
     );
 
-    saveFiles();
+    saveLocalCache();
     refreshDayUI(w, d);
     updateProgress();
     updateWeekBadge(w);
@@ -2489,7 +2424,7 @@ async function openFile(id) {
   if (file.name.toLowerCase().endsWith(".html") || file.name.toLowerCase().endsWith(".htm")) {
     try {
       showToast("HTML 파일을 렌더링 중입니다... ⏳");
-      
+
       // 1. HTML 내용 가져오기
       const response = await fetch(file.content);
       if (!response.ok) throw new Error("HTML 파일을 불러오는데 실패했습니다.");
@@ -2524,7 +2459,7 @@ async function openFile(id) {
       // 4. 새로운 Blob URL을 생성하여 미리 열어둔 새 탭의 주소로 이동
       const blob = new Blob([htmlText], { type: "text/html;charset=utf-8" });
       const blobUrl = URL.createObjectURL(blob);
-      
+
       newWindow.location.href = blobUrl;
       return;
     } catch (error) {
@@ -2602,7 +2537,7 @@ function renderFileList(container, w, d) {
             <button type="button" class="file-open-btn" data-id="${f.id}" title="${f.name}">${f.name}</button>
             <span class="file-size">${formatSize(f.size)}</span>
           </div>
-          <button type="button" class="file-del-btn" data-del="${f.id}" aria-label="삭제">×</button>
+          <button type="button" class="file-del-btn" data-del="${f.id}" aria-label="삭제" style="display: ${isLoggedIn ? 'grid' : 'none'};">×</button>
         </div>
       `;
     }).join("");
@@ -2621,7 +2556,6 @@ function renderFileList(container, w, d) {
       event.stopPropagation();
 
       const id = button.dataset.del;
-      console.log("[삭제 버튼 직접 클릭]", { id, w, d });
       void deleteFile(id, w, d);
     });
   });
@@ -2823,7 +2757,7 @@ function render() {
                       학습 메모
                     </span>
                   </div>
-                  <textarea class="memo-textarea" data-memo="${w}-${d}" placeholder="자동 저장됩니다.">${escapeHTML(allMemos[dayKey(w, d)] || "")}</textarea>
+                  <textarea class="memo-textarea" data-memo="${w}-${d}" placeholder="자동 저장됩니다." ${isLoggedIn ? '' : 'readonly'}>${escapeHTML(allMemos[dayKey(w, d)] || "")}</textarea>
                 </div>
 
                 <!-- 하단: 파일 업로드 -->
@@ -2980,8 +2914,6 @@ document.getElementById("weeksList")?.addEventListener("click", event => {
 
     const [w, d] = dayItem.dataset.dayItem.split("-").map(Number);
     const id = deleteButton.dataset.del;
-
-    console.log("삭제 버튼 클릭:", { id, w, d });
     void deleteFile(id, w, d);
     return;
   }
@@ -3997,3 +3929,231 @@ _sInput.addEventListener("input", () => {
 _sNext.addEventListener("click", _sGoNext);
 _sPrev.addEventListener("click", _sGoPrev);
 _sClose.addEventListener("click", _srchClose);
+
+function updateAuthUI() {
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (loginBtn) loginBtn.style.display = isLoggedIn ? 'none' : 'inline-flex';
+  if (logoutBtn) logoutBtn.style.display = isLoggedIn ? 'inline-flex' : 'none';
+
+  document.querySelectorAll('.file-del-btn').forEach(btn => {
+    btn.style.display = isLoggedIn ? 'grid' : 'none';
+  });
+
+  document.querySelectorAll('.memo-textarea').forEach(ta => {
+    if (isLoggedIn) {
+      ta.removeAttribute('readonly');
+    } else {
+      ta.setAttribute('readonly', 'readonly');
+    }
+  });
+}
+
+function showLoginModal() {
+  return new Promise(resolve => {
+    const previousOverflow = document.body.style.overflow;
+    const overlay = document.createElement("div");
+    overlay.className = "delete-modal-overlay";
+
+    overlay.innerHTML = `
+      <style>
+        .login-modal-theme.delete-modal::before {
+          background: rgba(139, 92, 246, 0.14) !important;
+        }
+        .login-modal-theme .delete-modal-icon {
+          color: #a78bfa;
+          background: linear-gradient(145deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.06));
+          border-color: rgba(139, 92, 246, 0.22);
+          box-shadow: 0 12px 30px rgba(139, 92, 246, 0.08);
+        }
+        .login-modal-theme .delete-modal-eyebrow {
+          color: #a78bfa;
+        }
+        .login-modal-theme .delete-modal-description {
+          margin-bottom: 28px;
+        }
+        .login-modal-theme .delete-modal-confirm {
+          background: linear-gradient(135deg, #8b5cf6, #6366f1);
+          border-color: rgba(139, 92, 246, 0.3);
+          box-shadow: 0 12px 28px rgba(139, 92, 246, 0.2);
+        }
+        .login-modal-theme .delete-modal-confirm:hover {
+          box-shadow: 0 16px 34px rgba(139, 92, 246, 0.28);
+        }
+      </style>
+      <section class="delete-modal login-modal-theme" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
+        <button class="delete-modal-close" type="button" aria-label="닫기">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+
+        <div class="delete-modal-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2C9.243 2 7 4.243 7 7v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7c0-2.757-2.243-5-5-5zM9 7c0-1.654 1.346-3 3-3s3 1.346 3 3v3H9V7zm7.5 13H7.5v-6h9v6z"/>
+          </svg>
+        </div>
+
+        <div class="delete-modal-copy">
+          <span class="delete-modal-eyebrow">LOGIN</span>
+          <h2 id="loginModalTitle">관리자 로그인</h2>
+          <p class="delete-modal-description">
+            메모 수정 및 파일 삭제를 위해 비밀번호를 입력해주세요.
+          </p>
+        </div>
+
+        <label class="delete-modal-field">
+          <div class="delete-modal-input-wrap">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="5" y="10" width="14" height="10" rx="2" />
+              <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+            </svg>
+            <input
+              class="delete-modal-input"
+              type="password"
+              inputmode="numeric"
+              autocomplete="off"
+              maxlength="20"
+              placeholder="비밀번호 입력"
+            >
+          </div>
+          <span class="delete-modal-error" id="loginModalError" aria-live="polite"></span>
+        </label>
+
+        <div class="delete-modal-actions">
+          <button class="delete-modal-cancel" type="button">취소</button>
+          <button class="delete-modal-confirm" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+               <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>
+            </svg>
+            로그인
+          </button>
+        </div>
+      </section>
+    `;
+
+    const modal = overlay.querySelector(".delete-modal");
+    const input = overlay.querySelector(".delete-modal-input");
+    const errorEl = overlay.querySelector(".delete-modal-error");
+    const confirmButton = overlay.querySelector(".delete-modal-confirm");
+    const cancelButton = overlay.querySelector(".delete-modal-cancel");
+    const closeButton = overlay.querySelector(".delete-modal-close");
+
+    document.body.appendChild(overlay);
+    document.body.style.overflow = "hidden";
+
+    let finished = false;
+
+    const finish = result => {
+      if (finished) return;
+      finished = true;
+      document.removeEventListener("keydown", handleKeydown);
+      document.body.style.overflow = previousOverflow;
+      overlay.classList.add("closing");
+      window.setTimeout(() => overlay.remove(), 180);
+      resolve(result);
+    };
+
+    const showError = message => {
+      errorEl.textContent = message;
+      input.setAttribute("aria-invalid", "true");
+      modal.classList.remove("shake");
+      void modal.offsetWidth;
+      modal.classList.add("shake");
+      input.focus();
+      input.select();
+    };
+
+    const submit = async () => {
+      const password = input.value;
+
+      if (!password) {
+        showError("비밀번호를 입력해 주세요.");
+        return;
+      }
+
+      confirmButton.disabled = true;
+      input.disabled = true;
+
+      try {
+        const derived = await _deriveKey(password);
+        const expected = _getExpected();
+
+        if (!_safeEqual(derived, expected)) {
+          showError("비밀번호가 올바르지 않습니다.");
+          if (!finished) {
+            confirmButton.disabled = false;
+            input.disabled = false;
+          }
+          return;
+        }
+
+        input.value = "";
+        finish(true);
+      } catch (err) {
+        console.error("[로그인 검증 오류]", err);
+        showError("비밀번호를 확인하지 못했습니다.");
+        if (!finished) {
+          confirmButton.disabled = false;
+          input.disabled = false;
+        }
+      }
+    };
+
+    const handleKeydown = event => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        finish(false);
+      }
+      if (event.key === "Enter") {
+        event.preventDefault();
+        void submit();
+      }
+    };
+
+    input.addEventListener("input", () => {
+      errorEl.textContent = "";
+      input.removeAttribute("aria-invalid");
+    });
+
+    confirmButton.addEventListener("click", () => void submit());
+    cancelButton.addEventListener("click", () => finish(false));
+    closeButton.addEventListener("click", () => finish(false));
+
+    overlay.addEventListener("mousedown", event => {
+      if (event.target === overlay) finish(false);
+    });
+
+    document.addEventListener("keydown", handleKeydown);
+
+    requestAnimationFrame(() => {
+      overlay.classList.add("visible");
+      input.focus();
+    });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  updateAuthUI();
+
+  const loginBtn = document.getElementById('loginBtn');
+  if (loginBtn) {
+    loginBtn.addEventListener('click', async () => {
+      const success = await showLoginModal();
+      if (success) {
+        isLoggedIn = true;
+        updateAuthUI();
+        showToast("로그인되었습니다.");
+      }
+    });
+  }
+
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      isLoggedIn = false;
+      updateAuthUI();
+      showToast("로그아웃되었습니다.");
+    });
+  }
+});
