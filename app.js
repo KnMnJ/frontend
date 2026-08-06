@@ -2537,6 +2537,7 @@ function renderFileList(container, w, d) {
             <button type="button" class="file-open-btn" data-id="${f.id}" title="${f.name}">${f.name}</button>
             <span class="file-size">${formatSize(f.size)}</span>
           </div>
+          ${['html', 'htm'].includes(e) ? `<button type="button" class="file-code-btn" data-code="${f.id}" aria-label="코드 보기" title="코드 보기"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></button>` : ''}
           <button type="button" class="file-del-btn" data-del="${f.id}" aria-label="삭제" style="display: ${isLoggedIn ? 'grid' : 'none'};">×</button>
         </div>
       `;
@@ -2915,6 +2916,15 @@ document.getElementById("weeksList")?.addEventListener("click", event => {
     const [w, d] = dayItem.dataset.dayItem.split("-").map(Number);
     const id = deleteButton.dataset.del;
     void deleteFile(id, w, d);
+    return;
+  }
+
+
+  const codeButton = target.closest(".file-code-btn");
+  if (codeButton) {
+    event.preventDefault();
+    event.stopPropagation();
+    showCodeModal(codeButton.dataset.code);
     return;
   }
 
@@ -3945,6 +3955,351 @@ function updateAuthUI() {
       ta.removeAttribute('readonly');
     } else {
       ta.setAttribute('readonly', 'readonly');
+    }
+  });
+}
+
+async function showCodeModal(id) {
+  const file = findFileById(id);
+  if (!file?.content) {
+    showToast("파일 정보를 찾지 못했습니다.");
+    return;
+  }
+
+  const previousOverflow = document.body.style.overflow;
+  const overlay = document.createElement("div");
+  overlay.className = "delete-modal-overlay";
+
+  overlay.innerHTML = `
+    <style>
+      .code-modal {
+        position: relative;
+        width: min(100%, 820px);
+        max-height: 85vh;
+        display: flex;
+        flex-direction: column;
+        padding: 0;
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        border-radius: 18px;
+        background: linear-gradient(165deg, rgba(20, 22, 40, 0.98), rgba(12, 14, 28, 0.99));
+        box-shadow:
+          0 32px 80px rgba(0, 0, 0, 0.65),
+          0 0 0 1px rgba(139, 92, 246, 0.06) inset,
+          0 1px 0 rgba(255, 255, 255, 0.06) inset;
+        overflow: hidden;
+        transform: translateY(14px) scale(0.97);
+        transition: transform 0.24s cubic-bezier(.2,.8,.2,1);
+      }
+      .delete-modal-overlay.visible .code-modal {
+        transform: translateY(0) scale(1);
+      }
+      .delete-modal-overlay.closing .code-modal {
+        transform: translateY(10px) scale(0.98);
+      }
+
+      /* ── 타이틀 바 ── */
+      .code-modal-titlebar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        background: rgba(30, 33, 58, 0.8);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .code-modal-dots {
+        display: flex;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+      .code-modal-dots span {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      .code-modal-dots span:nth-child(1) { background: #ff5f57; }
+      .code-modal-dots span:nth-child(2) { background: #ffbd2e; }
+      .code-modal-dots span:nth-child(3) { background: #28c840; }
+      .code-modal-titlebar-text {
+        flex: 1;
+        text-align: center;
+        color: #64748b;
+        font: 500 0.72rem/1 'JetBrains Mono', monospace;
+        letter-spacing: 0.03em;
+      }
+      .code-modal-close {
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(255,255,255,0.06);
+        background: rgba(255,255,255,0.03);
+        color: #64748b;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: all 0.15s ease;
+        flex-shrink: 0;
+      }
+      .code-modal-close:hover {
+        background: rgba(255,255,255,0.08);
+        color: #f8fafc;
+        border-color: rgba(255,255,255,0.12);
+      }
+      .code-modal-close svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      /* ── 탭 바 ── */
+      .code-modal-tab {
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        background: rgba(20, 22, 40, 0.6);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      }
+      .code-modal-tab-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 10px 16px 9px;
+        border-bottom: 2px solid #a78bfa;
+        color: #e2e8f0;
+        font: 600 0.78rem/1 'JetBrains Mono', monospace;
+      }
+      .code-modal-tab-icon {
+        width: 16px;
+        height: 16px;
+        display: grid;
+        place-items: center;
+        color: #f97316;
+      }
+      .code-modal-tab-icon svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      /* ── 코드 영역 ── */
+      .code-modal-body {
+        flex: 1;
+        overflow: auto;
+        padding: 20px 24px;
+        background: rgba(14, 16, 30, 0.5);
+      }
+      .code-modal-body::-webkit-scrollbar { width: 6px; height: 6px; }
+      .code-modal-body::-webkit-scrollbar-track { background: transparent; }
+      .code-modal-body::-webkit-scrollbar-thumb {
+        background: rgba(139, 92, 246, 0.25);
+        border-radius: 10px;
+      }
+      .code-modal-body::-webkit-scrollbar-thumb:hover {
+        background: rgba(139, 92, 246, 0.4);
+      }
+      .code-modal-body pre {
+        margin: 0;
+        counter-reset: line;
+      }
+      .code-modal-body code {
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 0.82rem;
+        line-height: 1.7;
+        background: transparent !important;
+        tab-size: 2;
+      }
+
+      /* ── 하단 정보 바 ── */
+      .code-modal-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 16px;
+        background: rgba(30, 33, 58, 0.6);
+        border-top: 1px solid rgba(255, 255, 255, 0.04);
+      }
+      .code-modal-footer-info {
+        display: flex;
+        gap: 16px;
+        color: #475569;
+        font: 500 0.68rem/1 'JetBrains Mono', monospace;
+      }
+      .code-modal-footer-info span {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .code-modal-copy-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 12px;
+        border: 1px solid rgba(139, 92, 246, 0.2);
+        border-radius: 8px;
+        background: rgba(139, 92, 246, 0.08);
+        color: #a78bfa;
+        font: 600 0.7rem/1 'JetBrains Mono', monospace;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .code-modal-copy-btn:hover {
+        background: rgba(139, 92, 246, 0.16);
+        border-color: rgba(139, 92, 246, 0.35);
+        color: #c4b5fd;
+      }
+      .code-modal-copy-btn svg {
+        width: 12px;
+        height: 12px;
+      }
+
+      /* ── 로딩 ── */
+      .code-modal-loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        padding: 60px 20px;
+        color: #64748b;
+        font: 500 0.85rem/1.4 'Pretendard', sans-serif;
+      }
+      .code-modal-spinner {
+        width: 28px;
+        height: 28px;
+        border: 2.5px solid rgba(139, 92, 246, 0.15);
+        border-top-color: #a78bfa;
+        border-radius: 50%;
+        animation: codeSpinner 0.7s linear infinite;
+      }
+      @keyframes codeSpinner {
+        to { transform: rotate(360deg); }
+      }
+
+      @media (max-width: 520px) {
+        .code-modal { border-radius: 14px; }
+        .code-modal-body { padding: 14px 12px; }
+        .code-modal-body code { font-size: 0.75rem; }
+      }
+    </style>
+    <section class="code-modal" role="dialog" aria-modal="true">
+
+      <!-- 타이틀 바 (macOS 스타일 도트) -->
+      <div class="code-modal-titlebar">
+        <div class="code-modal-dots"><span></span><span></span><span></span></div>
+        <span class="code-modal-titlebar-text">${escapeHTML(file.name)}</span>
+        <button class="code-modal-close" type="button" aria-label="닫기">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- 탭 바 -->
+      <div class="code-modal-tab">
+        <div class="code-modal-tab-item">
+          <span class="code-modal-tab-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="16 18 22 12 16 6"></polyline>
+              <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+          </span>
+          ${escapeHTML(file.name)}
+        </div>
+      </div>
+
+      <!-- 코드 본문 -->
+      <div class="code-modal-body">
+        <div class="code-modal-loading" id="codeModalLoading">
+          <div class="code-modal-spinner"></div>
+          코드를 불러오는 중...
+        </div>
+        <pre style="display:none"><code class="language-html" id="codeModalContent"></code></pre>
+      </div>
+
+      <!-- 하단 바 -->
+      <div class="code-modal-footer">
+        <div class="code-modal-footer-info">
+          <span>HTML</span>
+          <span>UTF-8</span>
+          <span id="codeModalLines">—</span>
+        </div>
+        <button class="code-modal-copy-btn" id="codeModalCopyBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          복사
+        </button>
+      </div>
+    </section>
+  `;
+
+  document.body.appendChild(overlay);
+  document.body.style.overflow = "hidden";
+
+  requestAnimationFrame(() => {
+    overlay.classList.add("visible");
+  });
+
+  const closeBtn = overlay.querySelector(".code-modal-close");
+  const codeEl = overlay.querySelector("#codeModalContent");
+
+  const close = () => {
+    overlay.classList.remove("visible");
+    overlay.classList.add("closing");
+    setTimeout(() => {
+      overlay.remove();
+      document.body.style.overflow = previousOverflow;
+    }, 200);
+  };
+
+  closeBtn.addEventListener("click", close);
+  overlay.addEventListener("click", e => {
+    if (e.target === overlay) close();
+  });
+
+  const onKeydown = e => {
+    if (e.key === "Escape") { close(); document.removeEventListener("keydown", onKeydown); }
+  };
+  document.addEventListener("keydown", onKeydown);
+
+  const loadingEl = overlay.querySelector("#codeModalLoading");
+  const preEl = overlay.querySelector("pre");
+  const linesEl = overlay.querySelector("#codeModalLines");
+  const copyBtn = overlay.querySelector("#codeModalCopyBtn");
+  let rawText = "";
+
+  try {
+    const response = await fetch(file.content);
+    if (!response.ok) throw new Error("파일 불러오기 실패");
+    rawText = await response.text();
+    codeEl.textContent = rawText;
+
+    if (window.hljs) {
+      hljs.highlightElement(codeEl);
+    }
+
+    const lineCount = rawText.split("\n").length;
+    if (linesEl) linesEl.textContent = `${lineCount} lines`;
+
+    loadingEl.style.display = "none";
+    preEl.style.display = "";
+  } catch (error) {
+    loadingEl.innerHTML = `<span style="color:#fb7185;">코드를 불러오지 못했습니다.</span>`;
+    console.error(error);
+  }
+
+  copyBtn?.addEventListener("click", async () => {
+    if (!rawText) return;
+    try {
+      await writeTextToClipboard(rawText);
+      copyBtn.textContent = "복사됨 ✓";
+      copyBtn.style.color = "#34d399";
+      copyBtn.style.borderColor = "rgba(52, 211, 153, 0.3)";
+      setTimeout(() => {
+        copyBtn.innerHTML = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> 복사`;
+        copyBtn.style.color = "";
+        copyBtn.style.borderColor = "";
+      }, 1500);
+    } catch (e) {
+      showToast("복사에 실패했습니다.");
     }
   });
 }
