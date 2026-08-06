@@ -4081,6 +4081,7 @@ async function showCodeModal(id) {
       /* ── 코드 영역 ── */
       .code-modal-body {
         flex: 1;
+        min-height: 0;
         overflow: auto;
         padding: 20px 24px;
         background: rgba(14, 16, 30, 0.5);
@@ -4096,7 +4097,8 @@ async function showCodeModal(id) {
       }
       .code-modal-body pre {
         margin: 0;
-        counter-reset: line;
+        width: fit-content;
+        min-width: 100%;
       }
       .code-modal-body code {
         font-family: 'JetBrains Mono', monospace !important;
