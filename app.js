@@ -2734,7 +2734,7 @@ function render() {
 
                 <!-- 왼쪽: 학습 내용 + 실습 정보 -->
                 <div class="topics-section">
-                  ${topicsHTML ? `<p class="topics-title">학습 내용</p>${topicsHTML}` : ""}
+                  ${topicsHTML ? `<p class="topics-title"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>학습 내용</p>${topicsHTML}` : ""}
                   ${dayData.practice ? `
                     <div class="practice-info" style="margin-top:8px">
                       <p class="practice-info-label">오늘의 실습</p>
@@ -2773,7 +2773,7 @@ function render() {
                       학습 파일 업로드
                     </span>
                   </div>
-                  <label class="upload-dropzone" data-upload="${w}-${d}">
+                  <label class="upload-dropzone" data-upload="${w}-${d}" style="display: ${isLoggedIn ? '' : 'none'};">
                     <input type="file" multiple accept="*/*">
                     <div class="upload-icon-wrap">
                       <svg viewBox="0 0 24 24">
@@ -3956,6 +3956,10 @@ function updateAuthUI() {
     } else {
       ta.setAttribute('readonly', 'readonly');
     }
+  });
+
+  document.querySelectorAll('.upload-dropzone').forEach(dz => {
+    dz.style.display = isLoggedIn ? '' : 'none';
   });
 }
 
